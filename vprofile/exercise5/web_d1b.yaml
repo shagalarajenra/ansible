@@ -1,0 +1,62 @@
+- name: Setup Webserver
+  hosts: websvrgrp
+  become: yes
+  vars: 
+    dbname: groups
+    dbuser: devops
+    dbpass: admin123
+  tasks:
+    - name: install httpd
+      yum:
+        name: httpd
+        state: present
+    - name: start httpd
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+    - name: Copy file with owner and permissions
+      copy:
+        src: index.html
+        dest: /var/www/html/index.html
+        owner: root
+        group: root
+        mode: '0644'
+        backup: yes  
+- name: setup db server
+  hosts: dbsvrgrp
+  become: yes
+  vars: 
+    dbname: groups
+    dbuser: devops
+    dbpass: admin123
+  tasks: 
+    - debug:
+       var: dbname     
+    - debug:
+       msg: "Value of dbuser is {{dbuser}}"     
+    - name: install my sql server
+      yum: 
+        name: mariadb-server
+        state: present
+    - name: Install python Mysql
+      yum:
+        name: MySQL-python
+        state: present
+    - name: start & enable maiadb-server
+      service:
+        name: mariadb       
+        state: started
+        enabled: yes
+    - name: Create a new databse with name 'accounts'
+      mysql_db:
+        name: "{{dbname}}"
+        state: present
+    - name: Create database user with name 'admin'
+      mysql_user:
+        name: "{{dbuser}}"
+        password: "{{dbpass}}"
+        priv: '*.*:ALL'
+        state: present        
+
+ 

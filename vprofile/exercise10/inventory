@@ -1,0 +1,12 @@
+web01 ansible_host=172.31.86.215 
+web02 ansible_host=172.31.83.164 
+[websvrgrp]
+web01
+[dbsvrgrp]
+web02
+[raju:children]
+websvrgrp
+dbsvrgrp
+[raju:vars]
+ansible_user=centos 
+ansible_ssh_private_key_file=vprifiele-key.pem

@@ -1,0 +1,56 @@
+---
+# tasks file for post-install
+- name: Install Ntp on Centos
+  yum:
+    name: "{{item}}"
+    state: present
+  when: ansible_distribution == "CentOS"
+  loop:
+    - ntp
+    - wget
+    - git
+    - zip
+    - unzip
+
+- name: Start & enable NTP on Redhat
+  service:
+    name: ntpd
+    state: started
+    enabled: yes
+  when: ansible_os_family == "RedHat"
+
+  # - name: Install Ntp on Ubuntu
+  # apt:
+  # name: ntp
+  # state: present
+  #when: ansible_disribution == "Ubuntu"
+- name: Add group
+  group:
+    name: devops
+    state: present
+- name: Add user
+  user:
+    name: "{{item}}"
+    state: present
+    groups: devops
+  loop: "{{usernames}}"
+- name: Depoly NTP conf file for Redat
+  template:
+    src: ntp_redhat.conf.j2
+    dest: /etc/ntp.conf
+  when: ansible_os_family == "RedHat"
+  notify:
+    - Restart NTP on Redhat
+
+- name: Dir for dev data
+  file:
+    path: /opt/devdate
+    state: directory
+    mode: 0775
+  tags:
+    - system
+- name: Deploy dev data file
+  copy:
+    src: dev.txt
+    dest: /opt/devdate/dev.txt
+  
